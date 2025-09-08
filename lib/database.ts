@@ -1,3 +1,8 @@
+// Switch to local database for KMRL requirements
+export { DatabaseService, type User, type FileRecord } from './local-database'
+
+// Keep the old implementation commented for reference
+/*
 import { neon } from "@neondatabase/serverless"
 
 const sql = neon(process.env.DATABASE_URL!)
@@ -203,3 +208,4 @@ export class DatabaseService {
     return result[0]?.count ?? 0
   }
 }
+*/

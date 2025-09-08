@@ -19,7 +19,8 @@ export async function POST(request: NextRequest) {
     for (const file of files) {
       if (file.size === 0) continue
 
-      // Save to funnel folder at SIH\sql\sampleDB\funnel root
+      // Save to funnel folder at the root level as per requirements
+      // The folder structure should be: sql/sampleDB/funnel/{department}/
       const funnelDir = path.resolve(process.cwd(), "../../sql/sampleDB/funnel", department || "general")
       await mkdir(funnelDir, { recursive: true })
 
