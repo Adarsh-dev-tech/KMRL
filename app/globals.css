@@ -623,6 +623,7 @@ body {
   padding-bottom: 18px;
   transition: all 0.2s ease;
   cursor: pointer;
+  min-width: 0;
 }
 
 .document-header-perplexity:hover {
@@ -634,6 +635,8 @@ body {
 
 .document-title-section {
   flex: 1;
+  min-width: 0;
+  margin-right: 15px;
 }
 
 .document-title-perplexity {
@@ -641,6 +644,9 @@ body {
   font-weight: 700;
   color: var(--primary);
   margin-bottom: 6px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
 }
 
 .document-meta {
@@ -662,6 +668,8 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 .download-btn-perplexity {

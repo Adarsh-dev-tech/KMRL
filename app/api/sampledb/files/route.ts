@@ -27,6 +27,25 @@ export async function GET() {
       const folderFiles = []
       const images = []
       let textContent = ''
+      let ai_title = folder
+      let cta = ""
+      let ai_summary = ""
+      
+      // First, check for summary.txt to extract AI content
+      const summaryFile = files.find(file => file.name === 'summary.txt' && file.isFile())
+      if (summaryFile) {
+        try {
+          const summaryPath = path.join(folderPath, summaryFile.name)
+          const summaryContent = fs.readFileSync(summaryPath, 'utf-8').trim()
+          const lines = summaryContent.split('\n').filter(line => line.trim() !== '')
+          
+          if (lines.length >= 1) ai_title = lines[0].trim()
+          if (lines.length >= 2) cta = lines[1].trim()
+          if (lines.length >= 3) ai_summary = lines.slice(2).join(' ').trim()
+        } catch (error) {
+          console.error(`Error reading summary.txt for ${folder}:`, error)
+        }
+      }
       
       for (const file of files) {
         if (file.isFile()) {
@@ -69,6 +88,9 @@ export async function GET() {
         created_at: folderStats.birthtime,
         content: textContent || `Folder containing ${folderFiles.length} files`,
         summary: `${folder} folder with ${folderFiles.length} files${images.length > 0 ? ` (${images.length} images)` : ''}`,
+        ai_title: ai_title,
+        cta: cta,
+        ai_summary: ai_summary,
         files: folderFiles,
         images: images,
         hasImages: images.length > 0
