@@ -71,11 +71,11 @@ export async function GET(request: NextRequest) {
         const folderItems = fs.readdirSync(itemPath, { withFileTypes: true })
         for (const folderItem of folderItems) {
           if (folderItem.isFile() && /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(folderItem.name)) {
-            images.push(`/sampleDB/${item.name}/${folderItem.name}`)
+            images.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/${encodeURIComponent(folderItem.name)}`)
           }
           // Check for tables (you can add logic here to detect table files like .csv, .xlsx etc)
           if (folderItem.isFile() && /\.(csv|xlsx|xls)$/i.test(folderItem.name)) {
-            tables.push(`/sampleDB/${item.name}/${folderItem.name}`)
+            tables.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/${encodeURIComponent(folderItem.name)}`)
           }
         }
         
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
           const imageFiles = fs.readdirSync(imagesPath, { withFileTypes: true })
           for (const imageFile of imageFiles) {
             if (imageFile.isFile() && /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(imageFile.name)) {
-              images.push(`/sampleDB/${item.name}/images/${imageFile.name}`)
+              images.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/images/${encodeURIComponent(imageFile.name)}`)
             }
           }
         }
@@ -121,7 +121,14 @@ export async function GET(request: NextRequest) {
     updates.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
     const limitedUpdates = updates.slice(0, limit)
 
-    return NextResponse.json({ updates: limitedUpdates }, { status: 200 })
+    // Count total files for compatibility with hook
+    const totalFiles = items.filter(item => item.isDirectory() && item.name !== "README.md" && item.name !== "funnel" && item.name !== "users").length
+
+    return NextResponse.json({ 
+      updates: limitedUpdates, 
+      totalFiles: totalFiles,
+      timestamp: new Date().toISOString()
+    }, { status: 200 })
   } catch (error) {
     console.error("File system query error:", error)
     return NextResponse.json({ error: "Failed to fetch updates" }, { status: 500 })

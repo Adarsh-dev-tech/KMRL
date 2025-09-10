@@ -40,7 +40,7 @@ export function useRealtimeUpdates(intervalMs = 5000): UseRealtimeUpdatesReturn 
         params.append("lastCheck", lastCheck)
       }
 
-      const response = await fetch(`/api/database/realtime?${params}`)
+      const response = await fetch(`/api/database/updates?${params}`)
       if (!response.ok) {
         throw new Error("Failed to fetch updates")
       }
@@ -50,8 +50,8 @@ export function useRealtimeUpdates(intervalMs = 5000): UseRealtimeUpdatesReturn 
       if (data.updates.length > 0) {
         setUpdates((prev) => {
           // Merge new updates with existing ones, avoiding duplicates
-          const existingIds = new Set(prev.map((u) => u.update_id))
-          const newUpdates = data.updates.filter((u: RealtimeUpdate) => !existingIds.has(u.update_id))
+          const existingIds = new Set(prev.map((u) => u.update_id || u.id))
+          const newUpdates = data.updates.filter((u: RealtimeUpdate) => !existingIds.has(u.update_id || u.id))
           return [...newUpdates, ...prev].slice(0, 100) // Keep only latest 100 updates
         })
         setLastUpdate(new Date().toISOString())
