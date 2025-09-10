@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getConnection } from "@/lib/mysql"
 import { verifyToken } from "@/lib/auth"
+import fs from "fs"
+import path from "path"
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,104 +22,74 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "50")
     const offset = Number.parseInt(searchParams.get("offset") || "0")
 
-    const connection = await getConnection()
-
-    let query = "SELECT * FROM file_links WHERE 1=1"
-    const params: any[] = []
-
-    if (source_platform && source_platform !== "all") {
-      query += " AND source_platform = ?"
-      params.push(source_platform)
+    // Read files from sampleDB directory
+    const sampleDBPath = path.join(process.cwd(), "sampleDB")
+    
+    if (!fs.existsSync(sampleDBPath)) {
+      return NextResponse.json({ fileLinks: [] }, { status: 200 })
     }
 
-    if (sender) {
-      query += " AND sender = ?"
-      params.push(sender)
+    const items = fs.readdirSync(sampleDBPath, { withFileTypes: true })
+    const fileLinks: any[] = []
+
+    for (const item of items) {
+      if (item.name === "README.md") continue
+
+      const itemPath = path.join(sampleDBPath, item.name)
+      const stats = fs.statSync(itemPath)
+      
+      let fileData: any = {
+        fileID: item.name,
+        file_location: `sampleDB/${item.name}`,
+        source_platform: "website",
+        sender: "system",
+        created_at: stats.birthtime || stats.mtime,
+        updated_at: stats.mtime,
+      }
+
+      if (item.isDirectory()) {
+        // Check for specific files within the directory
+        const dirContents = fs.readdirSync(itemPath)
+        const mainFile = dirContents.find(f => f.endsWith('.pdf') || f.endsWith('.doc') || f.endsWith('.docx'))
+        
+        if (mainFile) {
+          fileData.file_location = `sampleDB/${item.name}/${mainFile}`
+        }
+
+        // Check for additional resources
+        if (fs.existsSync(path.join(itemPath, "images"))) {
+          fileData.images_folder_link = `sampleDB/${item.name}/images`
+        }
+        if (fs.existsSync(path.join(itemPath, "summary.txt"))) {
+          fileData.summary_text_link = `sampleDB/${item.name}/summary.txt`
+        }
+        if (fs.existsSync(path.join(itemPath, "scanToText.txt"))) {
+          fileData.scanToText_link = `sampleDB/${item.name}/scanToText.txt`
+        }
+      }
+
+      // Apply filters
+      if (source_platform && source_platform !== "all" && fileData.source_platform !== source_platform) {
+        continue
+      }
+      if (sender && fileData.sender !== sender) {
+        continue
+      }
+
+      fileLinks.push(fileData)
     }
 
-    query += " ORDER BY created_at DESC LIMIT ? OFFSET ?"
-    params.push(limit, offset)
+    // Sort by creation date (newest first)
+    fileLinks.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
-    const [rows] = await connection.execute(query, params)
+    // Apply pagination
+    const paginatedFiles = fileLinks.slice(offset, offset + limit)
 
-    const fileLinks = (rows as any[]).map((row) => ({
-      ...row,
-    }))
-
-    return NextResponse.json({ fileLinks }, { status: 200 })
+    return NextResponse.json({ fileLinks: paginatedFiles }, { status: 200 })
   } catch (error) {
-    console.error("Database query error:", error)
+    console.error("File system query error:", error)
     return NextResponse.json({ error: "Failed to fetch file links" }, { status: 500 })
   }
 }
 
-export async function POST(request: NextRequest) {
-  try {
-    // Verify authentication
-    const token = request.cookies.get("auth-token")?.value
-    if (!token) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 })
-    }
-
-    const decoded = verifyToken(token)
-    if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
-    }
-
-    const {
-      file_location,
-      images_folder_link,
-      tables_folder_link,
-      summary_text_link,
-      scanToText_link,
-      source_platform,
-      sender,
-    } = await request.json()
-
-    if (!file_location) {
-      return NextResponse.json({ error: "Missing required field: file_location" }, { status: 400 })
-    }
-
-    const connection = await getConnection()
-
-    const [result] = await connection.execute(
-      `
-      INSERT INTO file_links (
-        file_location, images_folder_link, tables_folder_link, 
-        summary_text_link, scanToText_link, source_platform, sender
-      ) VALUES (?, ?, ?, ?, ?, ?, ?)
-    `,
-      [
-        file_location,
-        images_folder_link,
-        tables_folder_link,
-        summary_text_link,
-        scanToText_link,
-        source_platform,
-        sender,
-      ],
-    )
-
-    const insertId = (result as any).insertId
-
-    // Log the update
-    await connection.execute(
-      `
-      INSERT INTO document_updates (file_link_id, action, new_data)
-      VALUES (?, 'created', ?)
-    `,
-      [insertId, JSON.stringify({ file_location, source_platform, sender })],
-    )
-
-    return NextResponse.json(
-      {
-        message: "File link created successfully",
-        fileID: insertId,
-      },
-      { status: 201 },
-    )
-  } catch (error) {
-    console.error("Database insert error:", error)
-    return NextResponse.json({ error: "Failed to create file link" }, { status: 500 })
-  }
-}
+// POST method removed - files are managed through file system only

@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getConnection } from "@/lib/mysql"
 import { verifyToken } from "@/lib/auth"
+import fs from "fs"
+import path from "path"
 
 export async function GET(request: NextRequest) {
   try {
@@ -18,37 +19,78 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const lastCheck = searchParams.get("lastCheck")
 
-    const connection = await getConnection()
-
-    // Get recent updates since last check
-    let query = `
-      SELECT 
-        du.id as update_id,
-        du.action,
-        du.created_at as update_time,
-        fl.*
-      FROM document_updates du
-      LEFT JOIN file_links fl ON du.file_link_id = fl.fileID
-      WHERE 1=1
-    `
-    const params: any[] = []
-
-    if (lastCheck) {
-      query += " AND du.created_at > ?"
-      params.push(new Date(lastCheck))
+    // Read files from sampleDB directory
+    const sampleDBPath = path.join(process.cwd(), "sampleDB")
+    
+    if (!fs.existsSync(sampleDBPath)) {
+      return NextResponse.json({ 
+        updates: [], 
+        totalFiles: 0, 
+        timestamp: new Date().toISOString() 
+      }, { status: 200 })
     }
 
-    query += " ORDER BY du.created_at DESC LIMIT 100"
+    const items = fs.readdirSync(sampleDBPath, { withFileTypes: true })
+    const updates: any[] = []
+    let totalFiles = 0
 
-    const [updates] = await connection.execute(query, params)
+    for (const item of items) {
+      if (item.name === "README.md") continue
 
-    // Get total count of files
-    const [countResult] = await connection.execute("SELECT COUNT(*) as total FROM file_links")
-    const totalFiles = (countResult as any[])[0].total
+      totalFiles++
+      const itemPath = path.join(sampleDBPath, item.name)
+      const stats = fs.statSync(itemPath)
+      
+      // Create update record based on file modification time
+      const updateTime = stats.mtime
+      
+      // Filter by lastCheck date if provided
+      if (lastCheck && updateTime <= new Date(lastCheck)) {
+        continue
+      }
+
+      const update = {
+        update_id: `realtime_${item.name}_${stats.mtime.getTime()}`,
+        action: "updated",
+        update_time: updateTime,
+        fileID: item.name,
+        file_location: `sampleDB/${item.name}`,
+        source_platform: "website",
+        sender: "system",
+        created_at: stats.birthtime || stats.mtime,
+        updated_at: stats.mtime
+      }
+
+      if (item.isDirectory()) {
+        const dirContents = fs.readdirSync(itemPath)
+        const mainFile = dirContents.find(f => f.endsWith('.pdf') || f.endsWith('.doc') || f.endsWith('.docx'))
+        
+        if (mainFile) {
+          update.file_location = `sampleDB/${item.name}/${mainFile}`
+        }
+
+        // Check for additional resources
+        if (fs.existsSync(path.join(itemPath, "images"))) {
+          update.images_folder_link = `sampleDB/${item.name}/images`
+        }
+        if (fs.existsSync(path.join(itemPath, "summary.txt"))) {
+          update.summary_text_link = `sampleDB/${item.name}/summary.txt`
+        }
+        if (fs.existsSync(path.join(itemPath, "scanToText.txt"))) {
+          update.scanToText_link = `sampleDB/${item.name}/scanToText.txt`
+        }
+      }
+
+      updates.push(update)
+    }
+
+    // Sort by update time (newest first) and limit to 100
+    updates.sort((a, b) => new Date(b.update_time).getTime() - new Date(a.update_time).getTime())
+    const limitedUpdates = updates.slice(0, 100)
 
     return NextResponse.json(
       {
-        updates: updates as any[],
+        updates: limitedUpdates,
         totalFiles,
         timestamp: new Date().toISOString(),
       },
