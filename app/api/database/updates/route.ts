@@ -31,7 +31,8 @@ export async function GET(request: NextRequest) {
     const updates: any[] = []
 
     for (const item of items) {
-      if (item.name === "README.md") continue
+      // Skip individual files and the funnel folder
+      if (!item.isDirectory() || item.name === "README.md" || item.name === "funnel" || item.name === "users") continue
 
       const itemPath = path.join(sampleDBPath, item.name)
       const stats = fs.statSync(itemPath)
@@ -44,12 +45,65 @@ export async function GET(request: NextRequest) {
         continue
       }
 
+      // Read summary.txt if it exists
+      const summaryPath = path.join(itemPath, "summary.txt")
+      let aiTitle = item.name
+      let cta = ""
+      let aiSummary = ""
+      let images: string[] = []
+      let tables: string[] = []
+
+      if (fs.existsSync(summaryPath)) {
+        try {
+          const summaryContent = fs.readFileSync(summaryPath, 'utf8').trim()
+          const lines = summaryContent.split('\n').filter(line => line.trim() !== '')
+          
+          if (lines.length >= 1) aiTitle = lines[0].trim()
+          if (lines.length >= 2) cta = lines[1].trim()
+          if (lines.length >= 3) aiSummary = lines.slice(2).join(' ').trim()
+        } catch (error) {
+          console.log(`Error reading summary.txt for ${item.name}:`, error)
+        }
+      }
+
+      // Find images in the folder
+      try {
+        const folderItems = fs.readdirSync(itemPath, { withFileTypes: true })
+        for (const folderItem of folderItems) {
+          if (folderItem.isFile() && /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(folderItem.name)) {
+            images.push(`/sampleDB/${item.name}/${folderItem.name}`)
+          }
+          // Check for tables (you can add logic here to detect table files like .csv, .xlsx etc)
+          if (folderItem.isFile() && /\.(csv|xlsx|xls)$/i.test(folderItem.name)) {
+            tables.push(`/sampleDB/${item.name}/${folderItem.name}`)
+          }
+        }
+        
+        // Also check images subfolder
+        const imagesPath = path.join(itemPath, "images")
+        if (fs.existsSync(imagesPath) && fs.statSync(imagesPath).isDirectory()) {
+          const imageFiles = fs.readdirSync(imagesPath, { withFileTypes: true })
+          for (const imageFile of imageFiles) {
+            if (imageFile.isFile() && /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(imageFile.name)) {
+              images.push(`/sampleDB/${item.name}/images/${imageFile.name}`)
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`Error reading folder contents for ${item.name}:`, error)
+      }
+
       const update = {
         id: `update_${item.name}_${stats.mtime.getTime()}`,
         action: "updated",
         created_at: updateTime,
         file_name: item.name,
         original_name: item.name,
+        ai_title: aiTitle,
+        cta: cta,
+        ai_summary: aiSummary,
+        images: images,
+        tables: tables,
         department: "general",
         status: "processed",
         file_link_id: item.name,
