@@ -3,13 +3,20 @@
 import { useState, useEffect, useCallback } from "react"
 
 interface RealtimeUpdate {
-  update_id: number
+  update_id?: number
+  id?: string
   action: "created" | "updated" | "deleted"
-  update_time: string
+  update_time?: string
+  created_at?: string
   fileID?: number
   file_location?: string
   source_platform?: string
   sender?: string
+  ai_title?: string
+  cta?: string
+  ai_summary?: string
+  images?: string[]
+  tables?: string[]
 }
 
 interface UseRealtimeUpdatesReturn {

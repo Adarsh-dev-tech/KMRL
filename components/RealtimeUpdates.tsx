@@ -56,7 +56,7 @@ export function RealtimeUpdates() {
                   {update.action.toUpperCase()}
                 </span>
                 <span className="text-xs text-gray-500">
-                  {formatDistanceToNow(new Date(update.created_at || update.update_time), { addSuffix: true })}
+                  {formatDistanceToNow(new Date(update.created_at || update.update_time || new Date()), { addSuffix: true })}
                 </span>
               </div>
 
@@ -70,7 +70,7 @@ export function RealtimeUpdates() {
                 <div className="mb-3">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2">Images:</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                    {update.images.map((image, index) => (
+                    {update.images.map((image: string, index: number) => (
                       <img
                         key={index}
                         src={image}
@@ -90,7 +90,7 @@ export function RealtimeUpdates() {
                 <div className="mb-3">
                   <h4 className="text-sm font-semibold text-gray-700 mb-2">Tables:</h4>
                   <div className="space-y-1">
-                    {update.tables.map((table, index) => (
+                    {update.tables.map((table: string, index: number) => (
                       <a
                         key={index}
                         href={table}
