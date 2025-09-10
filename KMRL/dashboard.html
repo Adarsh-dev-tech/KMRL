@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMRL - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="dashboard-header">
+            <div class="logo-section">
+                <img src="img/KMRL-logo-300x165.jpg" alt="KMRL Logo" class="logo">
+            </div>
+            <div class="header-info">
+                <span class="date-time" id="dateTime"></span>
+            </div>
+            <nav class="nav-links">
+                <a href="#help">Help</a>
+                <a href="#contact">Contact Us</a>
+                <div class="dropdown">
+                    <button class="profile-btn">
+                        <i class="fas fa-user-circle"></i>
+                    </button>
+                    <div class="dropdown-content">
+                        <div class="profile-info">
+                            <strong id="userName">Nandha Kishore</strong>
+                            <span id="userEmployeeId">EMP001</span>
+                            <span id="userDepartment">Administration</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <a href="#profile"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#settings"><i class="fas fa-cog"></i> Settings</a>
+                        <a href="index.html" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <div class="banner-section dashboard-banner">
+            <img src="img/2nd.jpg" alt="Inbox Banner" class="banner-image">
+            <div class="banner-overlay">
+                <h1>Inbox</h1>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <aside class="sidebar">
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-item active" data-page="dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Dashboard
+                    </a>
+                    <a href="#" class="nav-item" data-page="upload">
+                        <i class="fas fa-upload"></i>
+                        Upload File
+                    </a>
+                    <a href="#" class="nav-item" data-page="search">
+                        <i class="fas fa-search"></i>
+                        Search File
+                    </a>
+                    <a href="#" class="nav-item" data-page="updates">
+                        <i class="fas fa-bell"></i>
+                        Updates
+                    </a>
+                </nav>
+            </aside>
+
+            <main class="content-area">
+                <div class="page-content" id="dashboard-page">
+                    <h2>Dashboard</h2>
+                    <div class="dashboard-stats">
+                        <div class="stat-card">
+                            <i class="fas fa-file-alt"></i>
+                            <div class="stat-info">
+                                <h3>Total Files</h3>
+                                <span class="stat-number">245</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-clock"></i>
+                            <div class="stat-info">
+                                <h3>Pending Reviews</h3>
+                                <span class="stat-number">12</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-check-circle"></i>
+                            <div class="stat-info">
+                                <h3>Completed</h3>
+                                <span class="stat-number">198</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div class="stat-info">
+                                <h3>Urgent</h3>
+                                <span class="stat-number">5</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-content hidden" id="upload-page">
+                    <h2>Upload Files</h2>
+                    <div class="upload-section">
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h3>Drag & Drop Files Here</h3>
+                                <p>or click to browse</p>
+                                <input type="file" id="fileInput" multiple hidden>
+                            </div>
+                        </div>
+                        <div class="link-section">
+                            <h3>Or Add Links</h3>
+                            <div class="link-input-group">
+                                <input type="url" id="linkInput" placeholder="Paste link here...">
+                                <button class="add-link-btn" id="addLinkBtn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="uploaded-files" id="uploadedFiles"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-content hidden" id="search-page">
+                    <h2>Search Files</h2>
+                    <div class="search-interface">
+                        <div class="search-bar-main">
+                            <input type="text" id="mainSearchInput" placeholder="Search files, documents, contacts...">
+                            <button class="search-btn-main" id="searchBtnMain">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                        <div class="search-filters">
+                            <div class="filter-group">
+                                <label>Department:</label>
+                                <select id="searchDepartment">
+                                    <option value="">All Departments</option>
+                                    <option value="administration">Administration</option>
+                                    <option value="finance">Finance</option>
+                                    <option value="operations">Operations</option>
+                                    <option value="engineering">Engineering</option>
+                                    <option value="safety">Safety & Security</option>
+                                    <option value="hr">Human Resources</option>
+                                    <option value="maintenance">Maintenance</option>
+                                    <option value="planning">Planning & Development</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>File Type:</label>
+                                <select id="searchFileType">
+                                    <option value="">All Types</option>
+                                    <option value="pdf">PDF Documents</option>
+                                    <option value="image">Images</option>
+                                    <option value="excel">Spreadsheets</option>
+                                    <option value="word">Documents</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Date Range:</label>
+                                <input type="date" id="searchDateFrom" placeholder="From">
+                                <input type="date" id="searchDateTo" placeholder="To">
+                            </div>
+                            <div class="filter-group">
+                                <label>Contact:</label>
+                                <input type="text" id="searchContact" placeholder="Search by contact name">
+                            </div>
+                        </div>
+                        <div class="search-results" id="searchResults">
+                            <div class="no-results">
+                                <i class="fas fa-search"></i>
+                                <p>Enter search terms to find files and documents</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="page-content hidden" id="updates-page">
+                    <div class="updates-header">
+                        <h2>Updates</h2>
+                        <div class="department-filter">
+                            <button class="department-btn" id="departmentBtn">
+                                <i class="fas fa-building"></i>
+                                Department <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="department-dropdown" id="departmentDropdown">
+                                <a href="#" data-dept="all">All Departments</a>
+                                <a href="#" data-dept="administration">Administration</a>
+                                <a href="#" data-dept="finance">Finance</a>
+                                <a href="#" data-dept="operations">Operations</a>
+                                <a href="#" data-dept="engineering">Engineering</a>
+                                <a href="#" data-dept="safety">Safety & Security</a>
+                                <a href="#" data-dept="hr">Human Resources</a>
+                                <a href="#" data-dept="maintenance">Maintenance</a>
+                                <a href="#" data-dept="planning">Planning & Development</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="document-sections" id="documentsContainer">
+                        <!-- Documents will be dynamically loaded here by JavaScript -->
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Floating Search - Only visible on updates page -->
+        <div class="floating-search" id="floatingSearch" style="display: none;">
+            <button class="search-toggle" id="searchToggle">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

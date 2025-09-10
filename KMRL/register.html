@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KMRL - Register User</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <div class="logo-section">
+                <img src="img/KMRL-logo-300x165.jpg" alt="KMRL Logo" class="logo">
+            </div>
+            <nav class="nav-links">
+                <a href="#help">Help</a>
+                <a href="#contact">Contact Us</a>
+            </nav>
+        </header>
+
+        <div class="register-container">
+            <div class="register-box">
+                <h2>Register User</h2>
+                <h3>New User</h3>
+                <form id="registerForm">
+                    <div class="input-group">
+                        <select id="department" required>
+                            <option value="">Choose Department</option>
+                            <option value="admin">Administration</option>
+                            <option value="finance">Finance</option>
+                            <option value="operations">Operations</option>
+                            <option value="hr">Human Resources</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="employeeId" placeholder="Employee ID" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="newPassword" placeholder="Password" required>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                    </div>
+                    <button type="submit" class="register-btn">Register</button>
+                    <div class="form-links">
+                        <a href="index.html" class="login-link">Already have an account? Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
