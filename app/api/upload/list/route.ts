@@ -79,6 +79,10 @@ export async function DELETE(request: Request) {
 
     const funnelPath = path.join(process.cwd(), 'sampleDB', 'funnel')
     
+    if (!fs.existsSync(funnelPath)) {
+      return NextResponse.json({ error: 'Funnel directory not found' }, { status: 404 })
+    }
+    
     // Find the file by ID (timestamp)
     const items = fs.readdirSync(funnelPath, { withFileTypes: true })
     let targetFile: string | null = null

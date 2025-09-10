@@ -483,7 +483,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => handleDownload(file.id)}>
+                        <button onClick={() => downloadFile(file.id, file.name)}>
                           <i className="fas fa-download"></i> Download
                         </button>
                         <button 

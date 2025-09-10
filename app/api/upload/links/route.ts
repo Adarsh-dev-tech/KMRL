@@ -10,9 +10,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
-    // Validate URL format
+    // Validate URL format and security
     try {
-      new URL(url)
+      const parsedUrl = new URL(url)
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        return NextResponse.json({ error: 'Only HTTP and HTTPS URLs are allowed' }, { status: 400 })
+      }
     } catch {
       return NextResponse.json({ error: 'Invalid URL format' }, { status: 400 })
     }
