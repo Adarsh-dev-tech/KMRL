@@ -257,14 +257,15 @@ export default function DashboardPage() {
           doc.content.toLowerCase().includes(searchForm.query.toLowerCase()) ||
           doc.summary.toLowerCase().includes(searchForm.query.toLowerCase())
 
-        // Department filter - if "All Departments" or empty, show all
-        // Check both the dept field and the departments array
+        // Department filter - handle both regular departments and special cases
         const matchesDepartment = !searchForm.department || 
           searchForm.department === '' ||
           searchForm.department.toLowerCase() === 'all departments' ||
-          doc.dept.toLowerCase().includes(searchForm.department.toLowerCase()) ||
-          (doc.departments && doc.departments.some(dept => 
-            dept.toLowerCase().includes(searchForm.department.toLowerCase())
+          // Handle special "SampleDB" case
+          (searchForm.department.toLowerCase() === 'sampledb' && doc.dept.toLowerCase().includes('sampledb')) ||
+          // Handle regular department matching from dept.txt files
+          (doc.departments && doc.departments.length > 0 && doc.departments.some((dept: string) => 
+            dept.toLowerCase() === searchForm.department.toLowerCase()
           ))
 
         // File type filter - if "All Types" or empty, show all  
@@ -279,13 +280,8 @@ export default function DashboardPage() {
         return matchesQuery && matchesDepartment && matchesFileType && matchesContact
       })
 
-      // If no filters are applied (all fields empty or default), show all files
-      if (!searchForm.query && (!searchForm.department || searchForm.department === '') && 
-          (!searchForm.fileType || searchForm.fileType === '') && !searchForm.contact) {
-        setSearchResults(allDocuments)
-      } else {
-        setSearchResults(results)
-      }
+      // Always use filtered results - don't override with allDocuments
+      setSearchResults(results)
       
       setSearchLoading(false)
     }, 800)
@@ -754,23 +750,52 @@ export default function DashboardPage() {
               )}
 
               <div className="document-sections">
-                {/* SampleDB Files */}
-                {sampleDbFiles.length > 0 && (
-                  <div className="document-category">
-                    <h4 className="category-title important">
-                      <i className="fas fa-folder-open important-star"></i> Sample Documents
-                    </h4>
-                    <div className="category-documents">
-                      {sampleDbFiles.map((file) => (
-                        <PerplexityStyleDocument
-                          key={file.fileID}
-                          fileLink={file}
-                          onDownload={handleDownload}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                )}
+                {/* SampleDB Files - Filtered by Department */}
+                {(() => {
+                  const filteredSampleDbFiles = selectedDepartment === "All Departments" || selectedDepartment === "all"
+                    ? sampleDbFiles
+                    : sampleDbFiles.filter(file => 
+                        file.departments && file.departments.length > 0 && 
+                        file.departments.some((dept: string) => dept.toLowerCase() === selectedDepartment.toLowerCase())
+                      )
+                  
+                  if (filteredSampleDbFiles.length > 0) {
+                    return (
+                      <div className="document-category">
+                        <h4 className="category-title important">
+                          <i className="fas fa-folder-open important-star"></i> Sample Documents
+                        </h4>
+                        <div className="category-documents">
+                          {filteredSampleDbFiles.map((file) => (
+                            <PerplexityStyleDocument
+                              key={file.fileID}
+                              fileLink={file}
+                              onDownload={handleDownload}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    )
+                  } else if (selectedDepartment !== "All Departments" && selectedDepartment !== "all" && sampleDbFiles.length > 0) {
+                    return (
+                      <div className="document-category">
+                        <h4 className="category-title important">
+                          <i className="fas fa-folder-open important-star"></i> Sample Documents
+                        </h4>
+                        <div className="no-results" style={{ textAlign: "center", padding: "50px", color: "#666" }}>
+                          <i className="fas fa-filter" style={{ fontSize: "3rem", color: "#35b6b9", marginBottom: "20px" }}></i>
+                          <h3>No results found</h3>
+                          <p>No documents found for the selected department: <strong>{selectedDepartment}</strong></p>
+                          <p style={{ fontSize: "14px", marginTop: "10px", color: "#888" }}>
+                            Try selecting "All Departments" to see all documents
+                          </p>
+                        </div>
+                      </div>
+                    )
+                  } else {
+                    return null
+                  }
+                })()}
 
                 {sampleDbFiles.length === 0 && fileLinks.length === 0 && (
                   <div className="no-results" style={{ textAlign: "center", padding: "50px", color: "#666" }}>
