@@ -172,6 +172,7 @@ export default function DashboardPage() {
         date: new Date(file.created_at).toLocaleDateString(),
         contact: file.sender || "KMRL System",
         dept: "SampleDB",
+        departments: file.departments || [], // Include departments array from API
         content: file.content || "",
         summary: file.summary || "",
         source: "sampleDB",
@@ -242,6 +243,7 @@ export default function DashboardPage() {
         date: new Date(file.created_at).toLocaleDateString(),
         contact: file.sender || "KMRL System",
         dept: "SampleDB",
+        departments: file.departments || [], // Include departments array from API
         content: file.content || "",
         summary: file.summary || "",
         source: "sampleDB",
@@ -256,10 +258,14 @@ export default function DashboardPage() {
           doc.summary.toLowerCase().includes(searchForm.query.toLowerCase())
 
         // Department filter - if "All Departments" or empty, show all
+        // Check both the dept field and the departments array
         const matchesDepartment = !searchForm.department || 
           searchForm.department === '' ||
           searchForm.department.toLowerCase() === 'all departments' ||
-          doc.dept.toLowerCase().includes(searchForm.department.toLowerCase())
+          doc.dept.toLowerCase().includes(searchForm.department.toLowerCase()) ||
+          (doc.departments && doc.departments.some(dept => 
+            dept.toLowerCase().includes(searchForm.department.toLowerCase())
+          ))
 
         // File type filter - if "All Types" or empty, show all  
         const matchesFileType = !searchForm.fileType || 
@@ -587,6 +593,13 @@ export default function DashboardPage() {
                       >
                         <option value="">All Departments</option>
                         <option value="sampledb">SampleDB</option>
+                        {/* Dynamic departments from sampleDB files */}
+                        {Array.from(new Set(
+                          sampleDbFiles.flatMap(file => file.departments || [])
+                        )).map(dept => (
+                          <option key={dept} value={dept}>{dept.charAt(0).toUpperCase() + dept.slice(1)}</option>
+                        ))}
+                        {/* Static common departments */}
                         <option value="finance">Finance</option>
                         <option value="hr">Human Resources</option>
                         <option value="operations">Operations</option>
