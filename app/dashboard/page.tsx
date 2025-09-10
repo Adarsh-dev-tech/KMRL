@@ -120,6 +120,7 @@ export default function DashboardPage() {
     links: uploadedLinks,
     refetch: refetchUploads,
     downloadFile,
+    deleteFile,
     formatFileSize,
   } = useUploadedFiles()
 
@@ -156,7 +157,7 @@ export default function DashboardPage() {
     if (activeTab === "search" && sampleDbFiles.length > 0 && searchResults.length === 0) {
       // Show all files by default when search tab is opened
       const allDocuments = sampleDbFiles.map(file => ({
-        title: file.folder_name || file.file_location.split("/").pop(),
+        title: file.ai_title || file.folder_name || file.file_location.split("/").pop(),
         type: "document",
         date: new Date(file.created_at).toLocaleDateString(),
         contact: file.sender || "KMRL System",
@@ -226,7 +227,7 @@ export default function DashboardPage() {
     setTimeout(() => {
       // Search through sampleDB files
       const allDocuments = sampleDbFiles.map(file => ({
-        title: file.folder_name || file.file_location.split("/").pop(),
+        title: file.ai_title || file.folder_name || file.file_location.split("/").pop(),
         type: "document",
         date: new Date(file.created_at).toLocaleDateString(),
         contact: file.sender || "KMRL System",
@@ -485,10 +486,20 @@ export default function DashboardPage() {
                         <button onClick={() => handleDownload(file.id)}>
                           <i className="fas fa-download"></i> Download
                         </button>
-                        <button style={{ background: "#dc3545" }}>
-                          <i className="fas fa-trash">
-                            Delete
-                          </i>
+                        <button 
+                          style={{ background: "#dc3545" }}
+                          onClick={async () => {
+                            try {
+                              await deleteFile(file.id, "file")
+                              showNotification("File deleted successfully", "success")
+                            } catch (error) {
+                              console.error("Delete failed:", error)
+                              showNotification("Failed to delete file", "error")
+                            }
+                          }}
+                        >
+                          <i className="fas fa-trash"></i>
+                          Delete
                         </button>
                       </div>
                     </div>
@@ -515,7 +526,18 @@ export default function DashboardPage() {
                         >
                           <i className="fas fa-external-link-alt"></i> Open
                         </a>
-                        <button style={{ background: "#dc3545" }}>
+                        <button 
+                          style={{ background: "#dc3545" }}
+                          onClick={async () => {
+                            try {
+                              await deleteFile(link.id, "link")
+                              showNotification("Link deleted successfully", "success")
+                            } catch (error) {
+                              console.error("Delete failed:", error)
+                              showNotification("Failed to delete link", "error")
+                            }
+                          }}
+                        >
                           <i className="fas fa-trash"></i>
                         </button>
                       </div>

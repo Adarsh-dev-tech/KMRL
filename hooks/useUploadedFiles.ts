@@ -43,6 +43,27 @@ export function useUploadedFiles() {
     }
   }
 
+  const deleteFile = async (fileId: string, type: "file" | "link" = "file") => {
+    try {
+      const response = await fetch(`/api/upload/list?id=${fileId}&type=${type}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const result = await response.json()
+        throw new Error(result.error || "Delete failed")
+      }
+
+      // Refresh the file list after deletion
+      await fetchFiles()
+      
+      return { success: true }
+    } catch (error) {
+      console.error("Delete failed:", error)
+      throw error
+    }
+  }
+
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes"
     const k = 1024
@@ -57,6 +78,7 @@ export function useUploadedFiles() {
     loading,
     refetch: fetchFiles,
     downloadFile,
+    deleteFile,
     formatFileSize,
   }
 }

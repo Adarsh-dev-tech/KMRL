@@ -77,6 +77,27 @@ export async function GET() {
             type: ext.substring(1) || 'unknown',
             modified: fileStats.mtime
           })
+        } else if (file.isDirectory() && file.name === 'images') {
+          // Scan images subdirectory
+          const imagesPath = path.join(folderPath, file.name)
+          const imageFiles = fs.readdirSync(imagesPath, { withFileTypes: true })
+          
+          for (const imageFile of imageFiles) {
+            if (imageFile.isFile()) {
+              const imageFilePath = path.join(imagesPath, imageFile.name)
+              const imageStats = fs.statSync(imageFilePath)
+              const ext = path.extname(imageFile.name).toLowerCase()
+              
+              if (['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'].includes(ext)) {
+                images.push({
+                  name: imageFile.name,
+                  path: `sampleDB/${folder}/images/${imageFile.name}`,
+                  size: imageStats.size,
+                  type: 'image'
+                })
+              }
+            }
+          }
         }
       }
 
