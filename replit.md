@@ -79,3 +79,18 @@ Preferred communication style: Simple, everyday language.
 - **AWS SDK**: Cloud services integration (credential providers)
 
 The application follows a modern full-stack architecture with clear separation between client and server concerns, implements secure authentication practices, and provides a scalable foundation for document management operations.
+
+## Recent Changes
+
+### Latest modifications with dates
+
+- **September 10, 2025**: Enhanced document management capabilities
+  - Fixed image display from subdirectories (e.g., "Moulding Sand/images/") throughout the system
+  - Implemented comprehensive file upload system with funnel folder storage for user uploads
+  - Added full download and delete functionality for uploaded files and links
+  - Fixed naming inconsistency - documents now display AI-generated titles from summary.txt instead of physical folder names
+  - Added security validation for external links (HTTP/HTTPS only to prevent XSS attacks)
+  - Enhanced real-time monitoring with 5-second polling intervals for document updates
+  - Improved error handling and user notifications across all file operations
+
+- Initial project setup and configuration (September 2025)
