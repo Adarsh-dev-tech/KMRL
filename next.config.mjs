@@ -12,7 +12,9 @@ const nextConfig = {
     unoptimized: true,
   },
   // Allow all dev origins for Replit proxy support
-  allowedDevOrigins: ["*"],
+  experimental: {
+    allowedDevOrigins: ["*"]
+  },
   // Enable all hosts for Replit proxy support
   async rewrites() {
     return [];
