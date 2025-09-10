@@ -30,6 +30,7 @@ export async function GET() {
       let ai_title = folder
       let cta = ""
       let ai_summary = ""
+      let departments: string[] = []
       
       // First, check for summary.txt to extract AI content
       const summaryFile = files.find(file => file.name === 'summary.txt' && file.isFile())
@@ -44,6 +45,19 @@ export async function GET() {
           if (lines.length >= 3) ai_summary = lines.slice(2).join(' ').trim()
         } catch (error) {
           console.error(`Error reading summary.txt for ${folder}:`, error)
+        }
+      }
+      
+      // Check for dept.txt to extract department information
+      const deptFile = files.find(file => file.name === 'dept.txt' && file.isFile())
+      if (deptFile) {
+        try {
+          const deptPath = path.join(folderPath, deptFile.name)
+          const deptContent = fs.readFileSync(deptPath, 'utf-8').trim()
+          // Parse departments - they're comma-separated
+          departments = deptContent.split(',').map(dept => dept.trim()).filter(dept => dept.length > 0)
+        } catch (error) {
+          console.error(`Error reading dept.txt for ${folder}:`, error)
         }
       }
       
@@ -112,6 +126,7 @@ export async function GET() {
         ai_title: ai_title,
         cta: cta,
         ai_summary: ai_summary,
+        departments: departments,
         files: folderFiles,
         images: images,
         hasImages: images.length > 0

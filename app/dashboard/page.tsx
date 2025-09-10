@@ -17,12 +17,22 @@ import { PerplexityStyleDocument } from "@/components/PerplexityStyleDocument"
 import { useNotification } from "@/hooks/useNotification"
 import { useUploadedFiles } from "@/hooks/useUploadedFiles"
 import { useFileLinks } from "@/hooks/useFileLinks"
-import type { FileLink } from "@/lib/mysql"
+// Remove mysql import - using local interface instead
 
 interface NotificationData {
   id: string
   message: string
   type: "success" | "error" | "info"
+}
+
+interface FileLink {
+  id?: string
+  fileID?: string
+  title?: string
+  url?: string
+  created_at?: string
+  file_location?: string
+  departments?: string[]
 }
 
 // Mock data for documents

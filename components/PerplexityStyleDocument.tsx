@@ -1,10 +1,14 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import type { FileLink } from "@/lib/mysql"
-
-// Extended interface for sampleDB files
-interface ExtendedFileLink extends FileLink {
+// Interface for sampleDB files
+interface ExtendedFileLink {
+  fileID?: string
+  file_location?: string
+  created_at?: string
+  sender?: string
+  source_platform?: string
+  departments?: string[] // Department tags from dept.txt
   files?: Array<{
     name: string
     path: string
@@ -25,6 +29,11 @@ interface ExtendedFileLink extends FileLink {
   cta?: string
   ai_summary?: string
   tables?: string[]
+  // Legacy database fields
+  summary_text_link?: string
+  scanToText_link?: string
+  images_folder_link?: string
+  tables_folder_link?: string
 }
 
 interface PerplexityStyleDocumentProps {
@@ -163,6 +172,28 @@ export function PerplexityStyleDocument({ fileLink, onDownload }: PerplexityStyl
         <div className="document-title-section">
           <h3 className="document-title-perplexity" style={{fontWeight: 'bold'}}>{displayTitle}</h3>
           <div className="document-meta">
+            {fileLink.departments && fileLink.departments.length > 0 && (
+              <div className="document-departments">
+                <i className="fas fa-building"></i>
+                {fileLink.departments.map((dept, index) => (
+                  <span 
+                    key={index} 
+                    className="department-tag" 
+                    style={{
+                      backgroundColor: '#35b6b9',
+                      color: 'white',
+                      padding: '2px 8px',
+                      borderRadius: '12px',
+                      fontSize: '12px',
+                      marginLeft: '4px',
+                      display: 'inline-block'
+                    }}
+                  >
+                    {dept}
+                  </span>
+                ))}
+              </div>
+            )}
             {fileLink.source_platform && (
               <span className="document-source">
                 <i className="fas fa-database"></i> {fileLink.source_platform}
