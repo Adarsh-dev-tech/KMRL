@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     const fileLinks: any[] = []
 
     for (const item of items) {
-      if (item.name === "README.md") continue
+      if (item.name === "README.md" || item.name === "funnel" || item.name === "users") continue
 
       const itemPath = path.join(sampleDBPath, item.name)
       const stats = fs.statSync(itemPath)
@@ -48,12 +48,75 @@ export async function GET(request: NextRequest) {
       }
 
       if (item.isDirectory()) {
+        // Read summary.txt if it exists to get AI title, CTA, and summary
+        const summaryPath = path.join(itemPath, "summary.txt")
+        if (fs.existsSync(summaryPath)) {
+          try {
+            const summaryContent = fs.readFileSync(summaryPath, 'utf8').trim()
+            const lines = summaryContent.split('\n').filter(line => line.trim() !== '')
+            
+            if (lines.length >= 1) fileData.ai_title = lines[0].trim()
+            if (lines.length >= 2) fileData.cta = lines[1].trim()
+            if (lines.length >= 3) fileData.ai_summary = lines.slice(2).join(' ').trim()
+          } catch (error) {
+            console.log(`Error reading summary.txt for ${item.name}:`, error)
+          }
+        }
+
         // Check for specific files within the directory
         const dirContents = fs.readdirSync(itemPath)
         const mainFile = dirContents.find(f => f.endsWith('.pdf') || f.endsWith('.doc') || f.endsWith('.docx'))
         
         if (mainFile) {
           fileData.file_location = `sampleDB/${item.name}/${mainFile}`
+        }
+
+        // Find images in both the main folder and images subfolder
+        let images: string[] = []
+        try {
+          for (const dirItem of dirContents) {
+            if (/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(dirItem)) {
+              images.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/${encodeURIComponent(dirItem)}`)
+            }
+          }
+          
+          // Also check images subfolder
+          const imagesPath = path.join(itemPath, "images")
+          if (fs.existsSync(imagesPath) && fs.statSync(imagesPath).isDirectory()) {
+            const imageFiles = fs.readdirSync(imagesPath)
+            for (const imageFile of imageFiles) {
+              if (/\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(imageFile)) {
+                images.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/images/${encodeURIComponent(imageFile)}`)
+              }
+            }
+          }
+          fileData.images = images
+        } catch (error) {
+          console.log(`Error reading images for ${item.name}:`, error)
+        }
+
+        // Find tables in both the main folder and tables subfolder
+        let tables: string[] = []
+        try {
+          for (const dirItem of dirContents) {
+            if (/\.(csv|xlsx|xls)$/i.test(dirItem)) {
+              tables.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/${encodeURIComponent(dirItem)}`)
+            }
+          }
+          
+          // Also check tables subfolder
+          const tablesPath = path.join(itemPath, "tables")
+          if (fs.existsSync(tablesPath) && fs.statSync(tablesPath).isDirectory()) {
+            const tableFiles = fs.readdirSync(tablesPath)
+            for (const tableFile of tableFiles) {
+              if (/\.(csv|xlsx|xls)$/i.test(tableFile)) {
+                tables.push(`/api/sampledb/download/${encodeURIComponent(item.name)}/tables/${encodeURIComponent(tableFile)}`)
+              }
+            }
+          }
+          fileData.tables = tables
+        } catch (error) {
+          console.log(`Error reading tables for ${item.name}:`, error)
         }
 
         // Check for additional resources
