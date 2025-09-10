@@ -18,17 +18,17 @@ Preferred communication style: Simple, everyday language.
 - **Component Structure**: Modular components with separation of concerns (UI components, business logic components, layout components)
 
 ### Backend Architecture
-- **API Routes**: Next.js API routes for handling authentication, file operations, and database interactions
-- **Database Layer**: Dual database approach with MongoDB for user management and MySQL for file metadata and document tracking
+- **API Routes**: Next.js API routes for handling authentication, file operations, and filesystem interactions
+- **Storage Layer**: File-based storage system using JSON files for user data and filesystem for document storage
 - **File Storage**: Local file system storage in `sampleDB` directory with unique timestamp-based naming
-- **Authentication**: JWT-based authentication with bcrypt password hashing
+- **Authentication**: JWT-based authentication with bcrypt password hashing using file-based user storage
 - **Middleware**: Route protection middleware for authenticated vs public routes
 
 ### Data Storage Solutions
-- **MongoDB**: User authentication data (employee credentials, departments, sessions)
-- **MySQL**: File metadata storage (file_links table for document metadata, document_updates table for change tracking)
-- **File System**: Physical file storage with organized directory structure for uploaded documents
-- **Real-time Updates**: Polling-based system for document updates and changes
+- **File System Storage**: User authentication data stored as JSON files in `sampleDB/users/` directory
+- **File System Storage**: Document metadata and files stored in `sampleDB/` directory with organized structure
+- **Physical File Storage**: Documents and their associated metadata (summary.txt, images, etc.) stored in filesystem
+- **Real-time Updates**: Polling-based system for document updates using file modification times
 
 ### Authentication and Authorization
 - **JWT Tokens**: Stored in HTTP-only cookies for session management
@@ -53,9 +53,9 @@ Preferred communication style: Simple, everyday language.
 - **TypeScript**: Type safety and development experience
 
 ### Database and Storage
-- **MongoDB**: NoSQL database via `mongodb` client for user management
-- **MySQL**: Relational database via `mysql2` for file metadata and document tracking
+- **File System**: JSON-based user storage for authentication and file metadata tracking
 - **bcryptjs**: Password hashing and authentication security
+- **fs/path**: Node.js filesystem modules for file operations
 
 ### UI and Styling
 - **Tailwind CSS**: Utility-first CSS framework for styling
