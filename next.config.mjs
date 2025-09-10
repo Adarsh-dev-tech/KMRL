@@ -11,6 +11,8 @@ const nextConfig = {
     domains: ["localhost"],
     unoptimized: true,
   },
+  // Allow all dev origins for Replit proxy support
+  allowedDevOrigins: ["*"],
   // Enable all hosts for Replit proxy support
   async rewrites() {
     return [];
