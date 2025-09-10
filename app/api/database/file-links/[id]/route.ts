@@ -18,7 +18,12 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 
     const { id } = params
     const sampleDBPath = path.join(process.cwd(), "sampleDB")
-    const itemPath = path.join(sampleDBPath, id)
+    
+    // Prevent path traversal attacks
+    const itemPath = path.resolve(sampleDBPath, id)
+    if (!itemPath.startsWith(sampleDBPath + path.sep) && itemPath !== sampleDBPath) {
+      return NextResponse.json({ error: "File link not found" }, { status: 404 })
+    }
 
     // Check if file/directory exists
     if (!fs.existsSync(itemPath)) {
