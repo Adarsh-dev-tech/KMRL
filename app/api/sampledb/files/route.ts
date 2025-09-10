@@ -13,7 +13,7 @@ export async function GET() {
     const allFiles: any[] = []
     
     const folders = fs.readdirSync(sampleDbPath, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory() && dirent.name !== 'funnel') // Exclude funnel folder
+      .filter(dirent => dirent.isDirectory() && dirent.name !== 'funnel' && dirent.name !== 'users') // Exclude funnel and users folders
       .map(dirent => dirent.name)
 
     for (const folder of folders) {
