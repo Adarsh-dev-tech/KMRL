@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
 import { hashPassword } from "@/lib/auth"
+import fs from 'fs'
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,14 +20,17 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Password must be at least 6 characters long" }, { status: 400 })
     }
 
-    // Connect to MongoDB
-    const client = await clientPromise
-    const db = client.db("kmrl_system")
-    const users = db.collection("users")
+    // Use file-based storage for users
+    const usersDir = path.join(process.cwd(), "sampleDB", "users")
+    const userFilePath = path.join(usersDir, `${employeeId}.json`)
+
+    // Create users directory if it doesn't exist
+    if (!fs.existsSync(usersDir)) {
+      fs.mkdirSync(usersDir, { recursive: true })
+    }
 
     // Check if employee ID already exists
-    const existingUser = await users.findOne({ employeeId })
-    if (existingUser) {
+    if (fs.existsSync(userFilePath)) {
       return NextResponse.json({ error: "Employee ID already registered" }, { status: 400 })
     }
 
@@ -36,15 +40,16 @@ export async function POST(request: NextRequest) {
       employeeId,
       department,
       password: hashedPassword,
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
     }
 
-    const result = await users.insertOne(newUser)
+    // Write user data to file
+    fs.writeFileSync(userFilePath, JSON.stringify(newUser, null, 2))
 
     return NextResponse.json(
       {
         message: "User registered successfully",
-        userId: result.insertedId,
+        userId: employeeId,
       },
       { status: 201 },
     )

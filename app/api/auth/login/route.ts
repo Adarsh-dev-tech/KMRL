@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
 import { comparePassword, generateToken } from "@/lib/auth"
+import fs from 'fs'
+import path from 'path'
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,16 +12,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Employee ID and password are required" }, { status: 400 })
     }
 
-    // Connect to MongoDB
-    const client = await clientPromise
-    const db = client.db("kmrl_system")
-    const users = db.collection("users")
+    // Use file-based storage for users
+    const usersDir = path.join(process.cwd(), "sampleDB", "users")
+    const userFilePath = path.join(usersDir, `${employeeId}.json`)
 
-    // Find user by employee ID
-    const user = await users.findOne({ employeeId })
-    if (!user) {
+    // Check if user file exists
+    if (!fs.existsSync(userFilePath)) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 })
     }
+
+    // Read user data from file
+    const userData = fs.readFileSync(userFilePath, 'utf8')
+    const user = JSON.parse(userData)
 
     // Verify password
     const isValidPassword = await comparePassword(password, user.password)
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
 
     // Generate JWT token
     const token = generateToken({
-      _id: user._id.toString(),
+      _id: user.employeeId,
       employeeId: user.employeeId,
       department: user.department,
       createdAt: user.createdAt,
